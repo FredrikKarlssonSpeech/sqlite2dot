@@ -1,0 +1,12 @@
+This script aims at providing a visualization of a SQLite schema by creating a .dot file 
+for use with the Graphwiz program.
+
+Requires:
+	Tcl
+	Sqlite package for Tcl
+
+Usage: tclsh sqlite2dot.tcl <database file>
+
+ 
+
+
