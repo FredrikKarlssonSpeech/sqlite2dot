@@ -23,34 +23,14 @@ append out  "\tnode \[shape=record,width=4\];\n"
 foreach currtab $tables {
 
 	set isFirst 1
-	set keyLst [list ]
-	#$currtab Field]
-	set valLst [list ]
-	#{} Value]
-	
+	set rows ""
 	db eval [format {PRAGMA table_info(%s);} $currtab] vals {
-		lappend keyLst $vals(name) 
-		lappend valLst $vals(type)
-		
-#		if {$isFirst} {
-#			append out [format {		%s [label="{<%s> %s | %s} } $currtab $vals(name) $vals(name) $vals(type)] 
-#		} else {
-#			append out [format {|{<%s> %s | %s} } $vals(name) $vals(name) $vals(type)]
-#		}
-#		set isFirst 0
+		append rows [format {<TR><TD PORT="%s">%s</TD><TD>%s</TD></TR>} $vals(name) $vals(name)  $vals(type) ]
+		append rows "\n"
 	}
-	#parray valsArr
-	set keyOut ""
-	foreach currkey $keyLst {
-		append keyOut [format {<%s> %s |} $currkey $currkey]
-	}
-	set keyOut [string trimright $keyOut "|"]
-	#puts $keyOut
-	set valOut [join $valLst " | "]
-	#puts $valOut
-	#append out {"];}
 
-	append out [format {	%s [label="{\N | %s } | { | %s }"];} $currtab $keyOut $valOut]
+
+	append out [format {			%s [label=<<TABLE PORT="%s"><TR><TD><B>%s</B></TD><TD></TD></TR>%s</TABLE>>];} $currtab $currtab $currtab $rows]
 	append out "\n"
 	
 	db eval [format {PRAGMA foreign_key_list(%s);} $currtab] vals {
