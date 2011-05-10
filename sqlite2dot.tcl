@@ -45,25 +45,61 @@ db eval {select name from sqlite_master where type = "table" and name NOT LIKE "
 
 
 append out  "digraph structs \{\n"
+append out  "\taspect=0.7;\n"
 append out  "\tnode \[width=4,shape=plaintext\];\n"
 
 foreach currtab $tables {
 
 	set isFirst 1
 	set rows ""
+
+	append out [format {	subgraph cluster_%s %s} $currtab "\{" ]
+	append out [format "\n\t\tlabel=\"%s\";\n" $currtab ] 
+	append out "\t\trank=same;\n"
+	append out "\t\tclusterrank=local;\n"
+	append out "\t\trankdir=LR;\n"
+	append out "\t\tlabeljust=l;\n"
+	append out "\t\tstyle=dotted;\n"
 	db eval [format {PRAGMA table_info(%s);} $currtab] vals {
-		append rows [format {<TR><TD PORT="%s" ALIGN="LEFT">%s</TD><TD ALIGN="LEFT">%s</TD></TR>} $vals(name) $vals(name)  $vals(type)]
+		append rows [format {<TR><TD PORT="%s" ALIGN="LEFT">%s</TD><TD ALIGN="LEFT" PORT="%s_type">%s</TD></TR>} $vals(name) $vals(name) $vals(name)  $vals(type)]
 		append rows "\n"
 	}
 
 
-	append out [format {			%s [label=<<TABLE PORT="%s" BORDER="0"><TR><TD BGCOLOR="grey" COLSPAN="2">%s</TD></TR>%s</TABLE>>];} $currtab $currtab $currtab $rows]
+	append out [format {		%s [weight=10,label=<<TABLE PORT="%s" BORDER="0"><TR><TD BGCOLOR="grey" COLSPAN="2">%s</TD></TR>%s</TABLE>>];} $currtab $currtab $currtab $rows]
 	append out "\n"
 	
 	db eval [format {PRAGMA foreign_key_list(%s);} $currtab] vals {
-		append out [format {			%s:%s -> %s:%s [arrowhead=vee,style=dotted];} $currtab $vals(from) $vals(table) $vals(to) ]
+		append out [format {		%s:%s -> %s:%s [arrowhead=vee,style=dotted];} $currtab $vals(from) $vals(table) $vals(to) ]
 		append out "\n"
 	}
+
+
+	#Index stuff
+	set indexes [list]
+	set rows ""
+	
+	db eval [format {PRAGMA index_list(%s);} $currtab] vals {
+		lappend indexes $vals(name)
+		append rows [format {<TR><TD PORT="%s" ALIGN="LEFT">%s</TD></TR>} $vals(name)  $vals(name) ]
+		append rows "\n"
+	}
+
+
+
+	append out [format {		%s_idx [weight=10,label=<<TABLE PORT="%s_index" BORDER="0"><TR><TD BGCOLOR="grey">indicies</TD></TR>%s</TABLE>>];} $currtab $currtab $rows]
+	append out "\n"
+
+	foreach idx $indexes {
+		db eval [format {PRAGMA index_info(%s);} $idx] idxinfo {
+			append out [format {			%s_idx:%s -> %s:%s_type [label="%d",style="dashed",arrowhead=diamond,arrowtail=diamond,dir=both, arrowsize=0.6];} $currtab $idx $currtab $idxinfo(name) $idxinfo(seqno)]
+			append out "\n"	
+						
+		}
+
+	}
+	append out "\t\}\n"
+
 }
 
 append out "\}"
