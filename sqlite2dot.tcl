@@ -56,8 +56,6 @@ foreach currtab $tables {
 	append out [format {	subgraph cluster_%s %s} $currtab "\{" ]
 	append out [format "\n\t\tlabel=\"%s\";\n" $currtab ] 
 	append out "\t\trank=same;\n"
-	append out "\t\tclusterrank=local;\n"
-	append out "\t\trankdir=LR;\n"
 	append out "\t\tlabeljust=l;\n"
 	append out "\t\tstyle=dotted;\n"
 	db eval [format {PRAGMA table_info(%s);} $currtab] vals {
