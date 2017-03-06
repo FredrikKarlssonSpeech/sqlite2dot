@@ -239,4 +239,4 @@ if __name__ == '__main__':
 
     conn.close()
 
-    print 'End of analyze'
+    print('End of analyze')
